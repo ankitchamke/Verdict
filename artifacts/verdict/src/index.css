@@ -32,18 +32,18 @@
 }
 
 :root {
-  --background: 43 35% 91%;
+  --background: 43 38% 90%;
   --foreground: 224 31% 17%;
-  --border: 224 20% 78%;
-  --input: 224 20% 78%;
+  --border: 224 19% 76%;
+  --input: 224 19% 76%;
   --ring: 74 73% 58%;
-  --card: 43 38% 94%;
+  --card: 43 42% 94%;
   --card-foreground: 224 31% 17%;
   --primary: 224 31% 17%;
-  --primary-foreground: 43 35% 91%;
-  --secondary: 43 24% 85%;
+  --primary-foreground: 43 38% 90%;
+  --secondary: 43 25% 84%;
   --secondary-foreground: 224 31% 17%;
-  --muted: 43 22% 83%;
+  --muted: 43 22% 82%;
   --muted-foreground: 224 13% 41%;
   --accent: 74 73% 58%;
   --accent-foreground: 224 31% 17%;
@@ -204,6 +204,81 @@
   .verdict-status {
     animation: status-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
+
+  .verdict-loading {
+    animation: reveal-up 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .loading-orbit {
+    animation: orbit 2.8s linear infinite;
+    transform-origin: center;
+  }
+
+  .loading-orbit-dot {
+    animation: orbit-dot 1.4s ease-in-out infinite alternate;
+    transform-origin: center;
+  }
+
+  .loading-copy {
+    animation: copy-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .verdict-results {
+    animation: reveal-up 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .result-card {
+    animation: reveal-up 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  .result-card:hover {
+    border-color: hsl(var(--foreground) / 0.3);
+    box-shadow: 0 20px 40px rgba(26, 35, 59, 0.09);
+    transform: translateY(-3px);
+  }
+
+  .result-card:focus-within {
+    border-color: hsl(var(--foreground) / 0.42);
+    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.42);
+  }
+
+  .result-card,
+  .verdict-footer-link,
+  .share-placeholder {
+    transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease, color 220ms ease, background-color 220ms ease;
+  }
+
+  .score-number {
+    animation: score-pop 900ms 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .score-ring-track {
+    stroke: hsl(var(--foreground) / 0.1);
+  }
+
+  .score-ring-fill {
+    animation: ring-draw 1250ms 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    stroke-dasharray: 327;
+    stroke-dashoffset: 327;
+  }
+
+  .verdict-footer-link:hover,
+  .share-placeholder:hover {
+    background: hsl(var(--foreground) / 0.06);
+    color: hsl(var(--foreground));
+  }
+
+  .verdict-eyebrow {
+    letter-spacing: 0.17em;
+  }
+
+  .verdict-results-rule {
+    background: hsl(var(--foreground) / 0.14);
+    height: 1px;
+  }
 }
 
 @keyframes reveal-up {
@@ -237,6 +312,67 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-dot {
+  from {
+    opacity: 0.35;
+    transform: scale(0.78);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes score-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ring-draw {
+  from {
+    stroke-dashoffset: 327;
+  }
+  to {
+    stroke-dashoffset: 72;
+  }
+}
+
+@keyframes progress-sweep {
+  from {
+    transform: translateX(-180%);
+  }
+  to {
+    transform: translateX(430%);
+  }
+}
+
+.loading-progress {
+  animation: progress-sweep 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
