@@ -1,7 +1,10 @@
-﻿import { Router, type IRouter } from "express";
+import { Router, type IRouter } from "express";
+import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { getAuth } from "@clerk/express";
 import { GoogleGenAI, Type } from "@google/genai";
+import { eq } from "drizzle-orm";
+import { getDb, sharedVerdictsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -194,6 +197,126 @@ router.post("/analyze", async (req, res) => {
     logger.error({ err: err?.message || err }, "Error in /api/verdict/analyze");
     return res.status(500).json({
       error: "An unexpected error occurred while analyzing your idea. Please try again.",
+    });
+  }
+});
+
+const ShareVerdictInputSchema = z.object({
+  idea: z
+    .string({ required_error: "Idea is required" })
+    .trim()
+    .min(10, "Idea must be at least 10 characters long.")
+    .max(500, "Idea cannot exceed 500 characters."),
+  verdict: z.object({
+    score: z.number().min(0).max(10),
+    scoreReason: z.string().min(1).max(500),
+    targetUser: z.string().min(1).max(500),
+    biggestRisk: z.string().min(1).max(500),
+    competitors: z.array(z.string().min(1).max(200)).min(1).max(10),
+    tenXSuggestion: z.string().min(1).max(500),
+  }),
+  roastMode: z.boolean().optional().default(false),
+});
+
+/**
+ * POST /api/verdict/share
+ * Protected endpoint to generate a shareable link for an existing verdict.
+ * Does NOT re-invoke Gemini.
+ */
+router.post("/share", async (req, res) => {
+  try {
+    const auth = getAuth(req);
+    if (!auth || !auth.userId) {
+      return res.status(401).json({
+        error: "Unauthorized. Please sign in to share a verdict.",
+      });
+    }
+
+    const parseResult = ShareVerdictInputSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const issues = parseResult.error.errors.map((e) => e.message).join(", ");
+      return res.status(400).json({ error: issues });
+    }
+
+    const { idea, verdict, roastMode } = parseResult.data;
+
+    // Generate clean, unpredictable, URL-safe 10-char share ID
+    const shareId = randomBytes(8).toString("base64url");
+
+    const db = getDb();
+    await db.insert(sharedVerdictsTable).values({
+      id: shareId,
+      idea,
+      score: verdict.score,
+      scoreReason: verdict.scoreReason,
+      targetUser: verdict.targetUser,
+      biggestRisk: verdict.biggestRisk,
+      competitors: verdict.competitors,
+      tenXSuggestion: verdict.tenXSuggestion,
+      roastMode,
+    });
+
+    return res.status(201).json({
+      shareId,
+      url: `/share/${shareId}`,
+    });
+  } catch (err: any) {
+    logger.error({ err: err?.message || err }, "Error in POST /api/verdict/share");
+    if (err?.message?.includes("DATABASE_URL")) {
+      return res.status(503).json({
+        error: "Database storage is currently unavailable. Please verify DATABASE_URL is configured.",
+      });
+    }
+    return res.status(500).json({
+      error: "Failed to create shareable link. Please try again.",
+    });
+  }
+});
+
+/**
+ * GET /api/verdict/share/:shareId
+ * Public endpoint to read a shared verdict without authentication.
+ * Returns only sanitized verdict content (no Clerk user data, no tokens).
+ */
+router.get("/share/:shareId", async (req, res) => {
+  try {
+    const { shareId } = req.params;
+    if (!shareId || typeof shareId !== "string" || shareId.length > 64) {
+      return res.status(400).json({ error: "Invalid share ID format." });
+    }
+
+    const db = getDb();
+    const records = await db
+      .select({
+        id: sharedVerdictsTable.id,
+        idea: sharedVerdictsTable.idea,
+        score: sharedVerdictsTable.score,
+        scoreReason: sharedVerdictsTable.scoreReason,
+        targetUser: sharedVerdictsTable.targetUser,
+        biggestRisk: sharedVerdictsTable.biggestRisk,
+        competitors: sharedVerdictsTable.competitors,
+        tenXSuggestion: sharedVerdictsTable.tenXSuggestion,
+        roastMode: sharedVerdictsTable.roastMode,
+        createdAt: sharedVerdictsTable.createdAt,
+      })
+      .from(sharedVerdictsTable)
+      .where(eq(sharedVerdictsTable.id, shareId))
+      .limit(1);
+
+    if (!records || records.length === 0) {
+      return res.status(404).json({ error: "Verdict not found." });
+    }
+
+    return res.json(records[0]);
+  } catch (err: any) {
+    logger.error({ err: err?.message || err }, "Error in GET /api/verdict/share/:shareId");
+    if (err?.message?.includes("DATABASE_URL")) {
+      return res.status(503).json({
+        error: "Database storage is currently unavailable. Please verify DATABASE_URL is configured.",
+      });
+    }
+    return res.status(500).json({
+      error: "An error occurred while retrieving the shared verdict.",
     });
   }
 });
