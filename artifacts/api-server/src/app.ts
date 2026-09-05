@@ -41,8 +41,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
 
-// API routes
+// API routes - support both with and without /api prefix (for Vercel serverless functions)
 app.use("/api", router);
+app.use(router);
 
 // Serve built frontend static assets if available (Production single-service mode)
 const candidateDistPaths = [
