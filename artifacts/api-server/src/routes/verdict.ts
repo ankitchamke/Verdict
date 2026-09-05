@@ -5,7 +5,7 @@ import { getAuth } from "@clerk/express";
 import { GoogleGenAI, Type } from "@google/genai";
 import { eq } from "drizzle-orm";
 import { getDb, sharedVerdictsTable } from "@workspace/db";
-import { logger } from "../lib/logger";
+import { logger } from "../lib/logger.js";
 
 const router: IRouter = Router();
 
