@@ -12,6 +12,7 @@ const AnalyzeIdeaInputSchema = z.object({
     .trim()
     .min(10, "Idea must be at least 10 characters long.")
     .max(500, "Idea cannot exceed 500 characters."),
+  roastMode: z.boolean().optional().default(false),
 });
 
 const VerdictOutputSchema = z.object({
@@ -25,7 +26,7 @@ const VerdictOutputSchema = z.object({
 
 export type VerdictOutput = z.infer<typeof VerdictOutputSchema>;
 
-const SYSTEM_INSTRUCTION = `You are an elite, brutally honest startup and venture reviewer (in the style of a discerning Y Combinator partner).
+const STANDARD_SYSTEM_INSTRUCTION = `You are an elite, brutally honest startup and venture reviewer (in the style of a discerning Y Combinator partner).
 Your sole purpose is to evaluate the build-worthiness of startup ideas.
 You cut through founder delusions, hype, and generic praise with razor-sharp critique, rigorous scrutiny, and tactical clarity.
 
@@ -40,6 +41,28 @@ Evaluation Guidelines:
 Output Rules:
 - Return strictly valid JSON adhering to the provided schema.
 - No markdown wrappers, no formatting outside the JSON object, no fluff or cheerleading.`;
+
+const ROAST_SYSTEM_INSTRUCTION = `You are a notoriously witty, sharp-tongued, and delightfully savage venture reviewer (in the style of an exasperated senior VC partner who has seen 10,000 pitch decks and has zero patience for founder delusions).
+Your goal is to ROAST THE IDEA with surgical precision, memorable wit, and uncompromising truth.
+
+Tone Rules:
+- Roast the IDEA, not the founder personally. Never be abusive, hateful, or derogatory.
+- Be hilarious yet deeply insightful, cutting, and analytically sound.
+- Every roast must point to a legitimate market flaw, adoption friction, or founder blind spot.
+- Use razor-sharp, memorable one-liners (e.g., "Your biggest problem isn't the competition. It's that nobody has a reason to switch", "A solution desperately in search of a problem").
+- Deliver tough love: explain why it currently fails unit economics, distribution, or differentiation, but give a genuinely brilliant unlock in tenXSuggestion.
+
+Evaluation Guidelines:
+1. "score": A float or integer from 0.0 to 10.0 reflecting ruthless build-worthiness.
+2. "scoreReason": Exactly one witty, stinging, and memorable one-liner capturing the core flaw of the idea.
+3. "targetUser": The painfully narrow or reluctant persona who might actually touch this, or who the founder is falsely imagining. Never say "everyone".
+4. "biggestRisk": The fatal reality check that will inevitably crush the idea if built as described.
+5. "competitors": An array of 2 to 3 real-world competitors or brutal incumbent realities (e.g. "Google Docs and inertia", "A free Zapier template").
+6. "tenXSuggestion": One sharp, high-leverage pivot that could actually resurrect this idea into a 10x business.
+
+Output Rules:
+- Return strictly valid JSON adhering to the provided schema.
+- No markdown wrappers, no formatting outside the JSON object.`;
 
 router.post("/analyze", async (req, res) => {
   try {
@@ -58,7 +81,7 @@ router.post("/analyze", async (req, res) => {
       return res.status(400).json({ error: issues });
     }
 
-    const { idea } = parseResult.data;
+    const { idea, roastMode } = parseResult.data;
 
     // 3. Initialize Gemini
     const apiKey = process.env.GEMINI_API_KEY;
@@ -71,12 +94,18 @@ router.post("/analyze", async (req, res) => {
 
     const ai = new GoogleGenAI({ apiKey });
 
-    // 4. Call Gemini with structured schema
+    // 4. Select prompt instructions based on mode
+    const systemInstruction = roastMode ? ROAST_SYSTEM_INSTRUCTION : STANDARD_SYSTEM_INSTRUCTION;
+    const userPrompt = roastMode
+      ? `Brutally roast this startup idea with surgical wit and give your verdict:\n\n"${idea}"`
+      : `Interrogate this startup idea and generate your brutal verdict:\n\n"${idea}"`;
+
+    // 5. Call Gemini with structured schema
     const response = await ai.models.generateContent({
       model: "gemini-3.6-flash",
-      contents: `Interrogate this startup idea and generate your brutal verdict:\n\n"${idea}"`,
+      contents: userPrompt,
       config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
+        systemInstruction,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -153,14 +182,14 @@ router.post("/analyze", async (req, res) => {
           competitors,
           tenXSuggestion: String(p.tenXSuggestion || "Narrow down to an indispensable workflow."),
         };
-        return res.json(fixedVerdict);
+        return res.json({ ...fixedVerdict, roastMode });
       }
       return res.status(502).json({
         error: "The verdict could not be structured properly. Please try again.",
       });
     }
 
-    return res.json(validatedVerdict.data);
+    return res.json({ ...validatedVerdict.data, roastMode });
   } catch (err: any) {
     logger.error({ err: err?.message || err }, "Error in /api/verdict/analyze");
     return res.status(500).json({
