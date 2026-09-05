@@ -20,9 +20,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { analyzeIdea, mockVerdict, type MockVerdict } from '@/lib/mock-analysis';
+import { mockVerdict, type MockVerdict } from '@/lib/mock-analysis';
 import NotFound from '@/pages/not-found';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+import { SignedIn, SignedOut, SignInButton, UserButton, useAuth, useClerk } from '@clerk/clerk-react';
 
 const queryClient = new QueryClient();
 
@@ -36,11 +37,9 @@ const loadingLines = [
 ];
 
 function SiteNav({
-  onSignIn,
   onReset,
   showReset,
 }: {
-  onSignIn: () => void;
   onReset?: () => void;
   showReset?: boolean;
 }) {
@@ -75,14 +74,28 @@ function SiteNav({
             New idea
           </button>
         )}
-        <button
-          className="verdict-signin text-[0.7rem] font-semibold uppercase tracking-[0.13em] text-[hsl(var(--foreground))] underline decoration-[hsl(var(--foreground)/0.25)] underline-offset-4 transition-colors hover:decoration-[hsl(var(--accent))]"
-          onClick={onSignIn}
-          type="button"
-          data-testid="button-sign-in"
-        >
-          Sign in
-        </button>
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button
+              className="verdict-signin text-[0.7rem] font-semibold uppercase tracking-[0.13em] text-[hsl(var(--foreground))] underline decoration-[hsl(var(--foreground)/0.25)] underline-offset-4 transition-colors hover:decoration-[hsl(var(--accent))]"
+              type="button"
+              data-testid="button-sign-in"
+            >
+              Sign in
+            </button>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <div className="flex items-center gap-3">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: 'h-8 w-8 ring-1 ring-[hsl(var(--foreground)/0.2)]',
+                },
+              }}
+            />
+          </div>
+        </SignedIn>
       </div>
     </nav>
   );
@@ -514,22 +527,67 @@ function Home() {
   const [phase, setPhase] = useState<FlowPhase>('input');
   const [verdict, setVerdict] = useState<MockVerdict>(mockVerdict);
   const [validationMessage, setValidationMessage] = useState('');
-  const [signInNotice, setSignInNotice] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isSignedIn, getToken } = useAuth();
+  const { openSignIn } = useClerk();
 
-  const handleSubmit = () => {
-    if (!idea.trim()) {
+  const handleSubmit = async () => {
+    const trimmed = idea.trim();
+    if (!trimmed) {
       setValidationMessage('Give us a real idea to interrogate first.');
       textareaRef.current?.focus();
       return;
     }
+    if (trimmed.length < 10) {
+      setValidationMessage('Give us at least 10 characters so we have enough context to interrogate your idea.');
+      textareaRef.current?.focus();
+      return;
+    }
+    if (trimmed.length > 500) {
+      setValidationMessage('Ideas must be within 500 characters.');
+      textareaRef.current?.focus();
+      return;
+    }
+
+    if (!isSignedIn) {
+      setValidationMessage('Please sign in to get your founder verdict.');
+      openSignIn();
+      return;
+    }
+
     setValidationMessage('');
     setPhase('loading');
-    analyzeIdea(idea.trim()).then((result) => {
+
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/verdict/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ idea: trimmed }),
+      });
+
+      if (!res.ok) {
+        let errMsg = 'Failed to analyze your idea. Please try again.';
+        try {
+          const errData = await res.json();
+          if (errData?.error) errMsg = errData.error;
+        } catch {}
+        setPhase('input');
+        setValidationMessage(errMsg);
+        return;
+      }
+
+      const result: MockVerdict = await res.json();
       setVerdict(result);
       setPhase('results');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    } catch {
+      setPhase('input');
+      setValidationMessage('Network connection error. Please check your connection and try again.');
+    }
   };
 
   const handleReset = () => {
@@ -543,7 +601,7 @@ function Home() {
   return (
     <main className="verdict-page">
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[1320px] flex-col px-5 sm:px-8 lg:px-12">
-        <SiteNav onSignIn={() => setSignInNotice(true)} onReset={handleReset} showReset={phase === 'results'} />
+        <SiteNav onReset={handleReset} showReset={phase === 'results'} />
         {phase === 'input' && (
           <InputExperience
             idea={idea}
@@ -558,9 +616,7 @@ function Home() {
         )}
         {phase === 'loading' && <LoadingExperience />}
         {phase === 'results' && <ResultsExperience idea={idea} verdict={verdict} onReset={handleReset} />}
-        {phase !== 'results' && <SiteFooter />}
-        {phase === 'results' && <SiteFooter />}
-        {signInNotice && <SignInNotice onDismiss={() => setSignInNotice(false)} />}
+        <SiteFooter />
       </div>
     </main>
   );
