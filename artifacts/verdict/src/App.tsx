@@ -4,11 +4,14 @@ import {
   Check,
   ChevronRight,
   Clock,
+  Copy,
+  ExternalLink,
   Flame,
   Github,
   History,
   Lightbulb,
   Linkedin,
+  Loader2,
   type LucideIcon,
   MoveDown,
   RotateCcw,
@@ -20,6 +23,7 @@ import {
   Trash2,
   TriangleAlert,
   UsersRound,
+  X,
 } from 'lucide-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -34,6 +38,8 @@ import {
   type HistoryEntry,
 } from '@/lib/history';
 import NotFound from '@/pages/not-found';
+import SharedVerdictPage from '@/pages/SharedVerdictPage';
+import { ScoreRing, VerdictCard, SiteFooter } from '@/components/VerdictUI';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
   SignedIn,
@@ -154,41 +160,6 @@ function SiteNav({
         </SignedIn>
       </div>
     </nav>
-  );
-}
-
-function SiteFooter() {
-  return (
-    <footer className="border-t border-[hsl(var(--foreground)/0.14)] py-6 sm:py-7">
-      <div className="flex flex-col gap-5 text-[0.68rem] text-[hsl(var(--muted-foreground))] sm:flex-row sm:items-center sm:justify-between">
-        <p data-testid="text-footer-credit">
-          Built by <span className="font-semibold text-[hsl(var(--foreground))]">Ankit Chamke</span>
-        </p>
-        <div className="flex items-center gap-2">
-          <span className="mr-2 hidden uppercase tracking-[0.13em] sm:inline">Keep in touch</span>
-          <a
-            className="verdict-footer-link flex h-9 w-9 items-center justify-center rounded-full border border-[hsl(var(--foreground)/0.15)] text-[hsl(var(--foreground))]"
-            href="https://github.com/ankitchamke"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Ankit Chamke on GitHub"
-            data-testid="link-github"
-          >
-            <Github className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
-          </a>
-          <a
-            className="verdict-footer-link flex h-9 w-9 items-center justify-center rounded-full border border-[hsl(var(--foreground)/0.15)] text-[hsl(var(--foreground))]"
-            href="https://www.linkedin.com/in/ankitchamke/"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Ankit Chamke on LinkedIn"
-            data-testid="link-linkedin"
-          >
-            <Linkedin className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
-          </a>
-        </div>
-      </div>
-    </footer>
   );
 }
 
@@ -443,100 +414,78 @@ function LoadingExperience({ roastMode }: { roastMode?: boolean }) {
   );
 }
 
-function ScoreRing({ score }: { score: number }) {
-  const [displayScore, setDisplayScore] = useState(0);
-
-  useEffect(() => {
-    const startedAt = performance.now();
-    const duration = 1100;
-    let frame = 0;
-    const tick = (now: number) => {
-      const progress = Math.min((now - startedAt) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayScore(Number((score * eased).toFixed(1)));
-      if (progress < 1) frame = window.requestAnimationFrame(tick);
-    };
-    frame = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(frame);
-  }, [score]);
-
-  return (
-    <div className="relative h-56 w-56 sm:h-64 sm:w-64" data-testid="score-visual">
-      <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
-        <circle className="score-ring-track" cx="60" cy="60" r="52" fill="none" strokeWidth="5" />
-        <circle
-          className="score-ring-fill"
-          cx="60"
-          cy="60"
-          r="52"
-          fill="none"
-          stroke="hsl(var(--accent-foreground))"
-          strokeLinecap="round"
-          strokeWidth="5"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="score-number text-[4.3rem] font-semibold leading-none tracking-[-0.09em] text-[hsl(var(--foreground))] sm:text-[5.2rem]" data-testid="text-score">
-          {displayScore.toFixed(1)}
-        </span>
-        <span className="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">/ 10</span>
-      </div>
-    </div>
-  );
-}
-
-function VerdictCard({
-  index,
-  label,
-  title,
-  icon: Icon,
-  children,
-  testId,
-}: {
-  index: string;
-  label: string;
-  title: string;
-  icon: LucideIcon;
-  children: ReactNode;
-  testId: string;
-}) {
-  return (
-    <article
-      className="result-card rounded-[1.05rem] border border-[hsl(var(--foreground)/0.16)] bg-[hsl(var(--card)/0.62)] p-6 sm:p-8"
-      style={{ '--reveal-delay': `${Number(index) * 100}ms` } as CSSProperties}
-      data-testid={testId}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(var(--accent)/0.7)] text-[hsl(var(--accent-foreground))]">
-            <Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden="true" />
-          </span>
-          <div>
-            <p className="verdict-eyebrow text-[0.58rem] font-semibold uppercase text-[hsl(var(--muted-foreground))]">{label}</p>
-            <h2 className="mt-1 text-[1.15rem] font-semibold tracking-[-0.035em] text-[hsl(var(--foreground))] sm:text-[1.3rem]">{title}</h2>
-          </div>
-        </div>
-        <span className="font-mono text-[0.62rem] text-[hsl(var(--muted-foreground))]">{index.padStart(2, '0')}</span>
-      </div>
-      <div className="mt-7 text-[0.96rem] leading-7 text-[hsl(var(--muted-foreground))]">{children}</div>
-    </article>
-  );
-}
-
 function ResultsExperience({
   idea,
   verdict,
   onReset,
   onOpenHistory,
   isRoastMode,
+  sharedId,
+  setSharedId,
 }: {
   idea: string;
   verdict: MockVerdict;
   onReset: () => void;
   onOpenHistory?: () => void;
   isRoastMode?: boolean;
+  sharedId?: string | null;
+  setSharedId?: (id: string | null) => void;
 }) {
-  const [shareNotice, setShareNotice] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const { getToken } = useAuth();
+
+  const handleShareClick = async () => {
+    if (sharedId) {
+      setShareModalOpen(true);
+      return;
+    }
+
+    try {
+      setIsSharing(true);
+      setShareError(null);
+      const token = await getToken();
+      const res = await fetch('/api/verdict/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          idea: idea.trim(),
+          verdict,
+          roastMode: Boolean(isRoastMode),
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Failed to create shareable link.');
+      }
+
+      const json = await res.json();
+      if (setSharedId) {
+        setSharedId(json.shareId);
+      }
+      setShareModalOpen(true);
+    } catch (err: any) {
+      setShareError(err.message || 'Could not generate share link.');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const shareUrl = sharedId ? `${window.location.origin}/share/${sharedId}` : '';
+
+  const handleCopyLink = () => {
+    if (!shareUrl) return;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
 
   return (
     <section className="verdict-results flex-1 pb-16 pt-16 sm:pb-24 sm:pt-24" id="verdict">
@@ -568,15 +517,39 @@ function ResultsExperience({
             </div>
           </div>
           <button
-            className="share-placeholder flex items-center gap-2 rounded-full border border-[hsl(var(--foreground)/0.18)] px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--muted-foreground))]"
-            onClick={() => setShareNotice(true)}
+            className="flex items-center gap-2 rounded-full border border-[hsl(var(--foreground)/0.18)] px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--foreground))] transition-all hover:border-[hsl(var(--foreground)/0.35)] hover:bg-[hsl(var(--foreground)/0.04)] disabled:opacity-60"
+            onClick={handleShareClick}
+            disabled={isSharing}
             type="button"
-            data-testid="button-share-placeholder"
+            data-testid="button-share-verdict"
           >
-            <Share2 className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden="true" />
-            Share verdict
+            {isSharing ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-[hsl(var(--accent-foreground))]" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Share2 className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden="true" />
+                Share verdict
+              </>
+            )}
           </button>
         </div>
+
+        {/* Share Error Notice */}
+        {shareError && (
+          <div className="mt-4 flex items-center justify-between rounded-[0.75rem] border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-[0.78rem] text-rose-300">
+            <span>{shareError}</span>
+            <button
+              className="ml-3 text-xs underline underline-offset-2 hover:text-white"
+              onClick={() => setShareError(null)}
+              type="button"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2">
           <VerdictCard index="1" label="The read" title="Score /10" icon={Sparkles} testId="card-score">
@@ -645,12 +618,84 @@ function ResultsExperience({
         </div>
       </div>
 
-      {shareNotice && (
-        <div className="verdict-status fixed bottom-5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[hsl(var(--foreground)/0.16)] bg-[hsl(var(--foreground))] px-4 py-3 text-[0.72rem] text-[hsl(var(--primary-foreground))]" role="status" data-testid="status-share-placeholder">
-          Sharing is coming soon.
-          <button className="font-semibold text-[hsl(var(--accent))] underline underline-offset-2" onClick={() => setShareNotice(false)} type="button" data-testid="button-dismiss-share">
-            Dismiss
-          </button>
+      {/* Share Modal Dialog */}
+      {shareModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in-0 duration-200"
+          role="dialog"
+          aria-modal="true"
+          data-testid="modal-share-verdict"
+        >
+          <div className="relative w-full max-w-[480px] rounded-[1.25rem] border border-[hsl(var(--foreground)/0.18)] bg-[hsl(var(--card))] p-6 shadow-2xl sm:p-7">
+            <button
+              className="absolute right-4 top-4 rounded-full p-1.5 text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-[hsl(var(--foreground))]"
+              onClick={() => setShareModalOpen(false)}
+              type="button"
+              aria-label="Close modal"
+              data-testid="button-close-share-modal"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="flex items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-[hsl(var(--muted-foreground))]">
+              <Share2 className="h-3.5 w-3.5 text-[hsl(var(--accent-foreground))]" />
+              Public Share Link
+            </div>
+
+            <h3 className="mt-2.5 text-xl font-semibold tracking-[-0.03em] text-[hsl(var(--foreground))] sm:text-2xl">
+              Share your Verdict
+            </h3>
+            <p className="mt-1.5 text-[0.82rem] leading-5 text-[hsl(var(--muted-foreground))]">
+              Anyone with this link can view your verdict without signing in. No private account details are included.
+            </p>
+
+            <div className="mt-5 flex items-center gap-2 rounded-[0.75rem] border border-[hsl(var(--foreground)/0.15)] bg-[hsl(var(--card)/0.8)] p-2">
+              <input
+                className="flex-1 bg-transparent px-2 font-mono text-[0.75rem] text-[hsl(var(--foreground))] outline-none"
+                readOnly
+                value={shareUrl}
+                data-testid="input-share-url"
+              />
+              <button
+                className="flex shrink-0 items-center gap-1.5 rounded-[0.55rem] bg-[hsl(var(--primary))] px-3.5 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90"
+                onClick={handleCopyLink}
+                type="button"
+                data-testid="button-modal-copy-link"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="mt-6 flex items-center justify-between border-t border-[hsl(var(--foreground)/0.1)] pt-4 text-[0.72rem]">
+              <a
+                className="flex items-center gap-1 text-[hsl(var(--muted-foreground))] transition-colors hover:text-[hsl(var(--foreground))]"
+                href={shareUrl}
+                target="_blank"
+                rel="noreferrer"
+                data-testid="link-modal-open-share"
+              >
+                Open in new tab
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              <button
+                className="font-medium text-[hsl(var(--muted-foreground))] transition-colors hover:text-[hsl(var(--foreground))]"
+                onClick={() => setShareModalOpen(false)}
+                type="button"
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>
@@ -840,6 +885,7 @@ function Home() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [roastMode, setRoastMode] = useState(false);
   const [isVerdictRoast, setIsVerdictRoast] = useState(false);
+  const [sharedId, setSharedId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isSignedIn, getToken } = useAuth();
   const { openSignIn } = useClerk();
@@ -910,6 +956,7 @@ function Home() {
       const result: MockVerdict = await res.json();
       setVerdict(result);
       setIsVerdictRoast(roastMode);
+      setSharedId(null);
 
       // Save to localStorage history under current user's ID with roastMode flag
       if (user?.id) {
@@ -929,6 +976,7 @@ function Home() {
     setPhase('input');
     setIdea('');
     setValidationMessage('');
+    setSharedId(null);
     window.setTimeout(() => textareaRef.current?.focus(), 60);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -946,6 +994,7 @@ function Home() {
     setIdea(entry.idea);
     setVerdict(entry.verdict);
     setIsVerdictRoast(Boolean(entry.roastMode));
+    setSharedId(null);
     setPhase('results');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -994,6 +1043,8 @@ function Home() {
             onReset={handleReset}
             onOpenHistory={handleOpenHistory}
             isRoastMode={isVerdictRoast}
+            sharedId={sharedId}
+            setSharedId={setSharedId}
           />
         )}
         {phase === 'history' && (
@@ -1016,6 +1067,7 @@ function Router() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/share/:shareId" component={SharedVerdictPage} />
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>
