@@ -37,28 +37,33 @@ function toError(value: unknown): Error {
 
 function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-6">
-      <div className="max-w-lg w-full text-center">
-        <h1 className="text-xl font-semibold text-gray-900">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#11141c] text-white p-6">
+      <div className="max-w-lg w-full text-center space-y-4">
+        <h1 className="text-xl font-semibold text-white">
           Something went wrong
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          This part of the app hit an error. The rest of the app is still
-          running.
+        <p className="text-sm text-neutral-400">
+          This part of the app encountered an error.
         </p>
-        {/* Dev only: messages can carry API responses and other internals. */}
-        {import.meta.env.DEV ? (
-          <pre className="mt-4 overflow-x-auto rounded bg-gray-100 p-3 text-left text-xs text-gray-800">
-            {error.message || String(error)}
-          </pre>
-        ) : null}
-        <button
-          type="button"
-          onClick={resetError}
-          className="mt-4 rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
-        >
-          Try again
-        </button>
+        <pre className="overflow-x-auto rounded-lg bg-neutral-900/90 border border-neutral-800 p-3 text-left text-xs text-rose-300 font-mono">
+          {error.message || String(error)}
+        </pre>
+        <div className="pt-2 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={resetError}
+            className="rounded-md bg-neutral-800 px-4 py-2 text-sm text-white hover:bg-neutral-700 transition-colors"
+          >
+            Try again
+          </button>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-md bg-[#D4FC34] text-black font-semibold px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+          >
+            Reload page
+          </button>
+        </div>
       </div>
     </div>
   );
