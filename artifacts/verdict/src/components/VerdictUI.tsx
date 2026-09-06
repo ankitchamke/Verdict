@@ -86,26 +86,65 @@ export function ScoreRing({ score }: { score: number }) {
     return () => window.cancelAnimationFrame(frame);
   }, [score]);
 
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius; // ~326.73
+  const clampedScore = Math.max(0, Math.min(10, displayScore));
+  const strokeDashoffset = circumference * (1 - clampedScore / 10);
+
+  // Dynamic color matching the score tier
+  // >= 7.0: Brand Accent (High Potential)
+  // >= 4.0: Amber / Warm Gold (Moderate)
+  // < 4.0: Coral Red (High Risk)
+  const strokeColor =
+    score >= 7.0
+      ? 'hsl(var(--accent-foreground))'
+      : score >= 4.0
+      ? '#F59E0B'
+      : '#EF4444';
+
+  const tierLabel =
+    score >= 7.0
+      ? 'High Potential'
+      : score >= 4.0
+      ? 'Moderate Potential'
+      : 'High Risk';
+
+  const tierBadgeClass =
+    score >= 7.0
+      ? 'bg-[hsl(var(--accent)/0.15)] text-[hsl(var(--accent-foreground))] border-[hsl(var(--accent)/0.4)]'
+      : score >= 4.0
+      ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
+      : 'bg-red-500/10 text-red-500 border-red-500/30';
+
   return (
     <div className="relative h-56 w-56 sm:h-64 sm:w-64" data-testid="score-visual">
       <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
-        <circle className="score-ring-track" cx="60" cy="60" r="52" fill="none" strokeWidth="5" />
+        <circle className="score-ring-track" cx="60" cy="60" r={radius} fill="none" strokeWidth="5" />
         <circle
           className="score-ring-fill"
           cx="60"
           cy="60"
-          r="52"
+          r={radius}
           fill="none"
-          stroke="hsl(var(--accent-foreground))"
+          stroke={strokeColor}
           strokeLinecap="round"
           strokeWidth="5"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          style={{
+            strokeDasharray: circumference,
+            strokeDashoffset,
+          }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="score-number text-[4.3rem] font-semibold leading-none tracking-[-0.09em] text-[hsl(var(--foreground))] sm:text-[5.2rem]" data-testid="text-score">
           {displayScore.toFixed(1)}
         </span>
-        <span className="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">/ 10</span>
+        <span className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground))]">/ 10</span>
+        <span className={`mt-2 rounded-full border px-2.5 py-0.5 font-mono text-[0.6rem] font-semibold tracking-wider uppercase ${tierBadgeClass}`}>
+          {tierLabel}
+        </span>
       </div>
     </div>
   );
