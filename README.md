@@ -1,4 +1,4 @@
-# Verdict ⚖️ — AI Startup Idea Validator
+﻿# Verdict ⚖️ — AI Startup Idea Validator
 
 > Get instant, structured, investor-grade feedback on your startup idea — with an optional brutal-honesty mode.
 
