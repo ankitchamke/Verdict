@@ -1,2 +1,5 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://verdict-api-server-lyart.vercel.app/sitemap.xml
+
