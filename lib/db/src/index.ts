@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import * as schema from "./schema";
+import * as schema from "./schema/index.js";
 
 const { Pool } = pg;
 
@@ -40,4 +40,6 @@ export const db = {
   },
 };
 
-export * from "./schema";
+export * from "./schema/index.js";
+export * from "./schema/sharedVerdicts.js";
+export { eq, sql, and, or, desc, asc, not, inArray, isNull, isNotNull } from "drizzle-orm";
