@@ -1,1 +1,1 @@
-export * from "./sharedVerdicts";
+export * from "./sharedVerdicts.js";

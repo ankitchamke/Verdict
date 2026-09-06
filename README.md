@@ -20,37 +20,32 @@
 > Place your screenshots in `./attached_assets/` matching the filenames below.
 
 ### 1. Landing Page & Idea Input
-<!-- Layout reference: Hero section with clear value proposition and startup idea textarea -->
 ![Landing Page](./attached_assets/preview-hero.png)
 
 ---
 
 ### 2. Real-Time Gemini AI Verdict Analysis
-<!-- Layout reference: Comprehensive 5-part structured breakdown with dynamic score gauge -->
 ![Verdict Result](./attached_assets/preview-verdict.png)
 
 ---
 
 ### 3. Roast Mode Activated 🔥
-<!-- Layout reference: Roast Mode toggle enabled with witty, unfiltered critique -->
 ![Roast Mode](./attached_assets/preview-roast.png)
 
 ---
 
 ### 4. Seamless Clerk Authentication & User Profile 🔐
-<!-- Layout reference: Clerk sign-in modal, session management, and custom styled UserButton -->
 ![Clerk Authentication](./attached_assets/preview-auth.png)
+![Clerk Authentication](./attached_assets/preview-auth2.png)
 
 ---
 
 ### 5. User Idea History (Scoped per Clerk User)
-<!-- Layout reference: Saved idea evaluations isolated strictly per authenticated Clerk user -->
 ![Idea History](./attached_assets/preview-history.png)
 
 ---
 
 ### 6. Public Shareable Verdict Links
-<!-- Layout reference: Cross-device share modal with public permanent URL via Neon PostgreSQL -->
 ![Shareable Verdict](./attached_assets/preview-share.png)
 
 ---

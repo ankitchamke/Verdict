@@ -3,8 +3,7 @@ import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { getAuth } from "@clerk/express";
 import { GoogleGenAI, Type } from "@google/genai";
-import { eq } from "drizzle-orm";
-import { getDb, sharedVerdictsTable } from "@workspace/db";
+import { getDb, sharedVerdictsTable, eq } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 
 const router: IRouter = Router();
