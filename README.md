@@ -13,7 +13,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Verdict-D4FC34?style=for-the-badge&logo=vercel&logoColor=black&labelColor=161B26)](https://verdict-api-server-lyart.vercel.app)
 
-🌐 **Live Application:** [https://verdict-api-server-lyart.vercel.app](https://verdict-api-server-lyart.vercel.app)
+🌐 [**Live Application:**](https://verdict-ankitchamke.vercel.app/)
 
 ---
 
