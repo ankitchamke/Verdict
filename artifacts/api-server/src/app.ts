@@ -3,10 +3,14 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import cors from "cors";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { pinoHttp } from "pino-http";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 import { clerkMiddleware } from "@clerk/express";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app: Express = express();
 
@@ -40,7 +44,12 @@ app.use(
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(clerkMiddleware());
+
+if (process.env.CLERK_SECRET_KEY) {
+  app.use(clerkMiddleware());
+} else {
+  logger.warn("CLERK_SECRET_KEY is not configured. Clerk middleware skipped.");
+}
 
 // API routes - support both with and without /api prefix (for Vercel serverless functions)
 app.use("/api", router);

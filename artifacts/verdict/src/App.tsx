@@ -946,8 +946,17 @@ function Home() {
       if (!res.ok) {
         let errMsg = 'Failed to analyze your idea. Please try again.';
         try {
-          const errData = await res.json();
-          if (errData?.error) errMsg = errData.error;
+          const text = await res.text();
+          try {
+            const errData = JSON.parse(text);
+            if (errData?.error) errMsg = errData.error;
+          } catch {
+            if (text.includes('FUNCTION_INVOCATION_FAILED')) {
+              errMsg = 'Vercel Serverless Function error. Please ensure environment variables (GEMINI_API_KEY, CLERK_SECRET_KEY) are configured and redeploy.';
+            } else if (text) {
+              errMsg = text.slice(0, 150);
+            }
+          }
         } catch {}
         setPhase('input');
         setValidationMessage(errMsg);
