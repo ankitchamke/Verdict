@@ -1,6 +1,6 @@
-﻿# Verdict ⚖️ — Brutally Honest AI Startup Idea Validator
+﻿# Verdict ⚖️ — AI Startup Idea Validator
 
-> Get instant, unfiltered, investor-grade analysis on your startup ideas before spending months building something nobody wants.
+> Get instant, structured, investor-grade feedback on your startup idea — with an optional brutal-honesty mode.
 
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://vercel.com)
 [![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev)
@@ -11,98 +11,52 @@
 [![PostgreSQL](https://img.shields.io/badge/Database-Neon%20Postgres-00E599?logo=postgresql)](https://neon.tech)
 [![Drizzle](https://img.shields.io/badge/ORM-Drizzle-C5F74F?logo=drizzle)](https://orm.drizzle.team)
 
+🔗 **[Live Demo](https://your-deployed-url-here.vercel.app)** *(Update with your production Vercel URL)*
+
 ---
 
 ## 📸 Previews & Screenshots
 
-> *Placeholder sections ready for product screenshots and demo captures.*
+> Place your screenshots in `./attached_assets/` matching the filenames below.
 
 ### 1. Landing Page & Idea Input
-<!-- ================================================================= -->
-<!-- PREVIEW PLACEHOLDER: HERO & PROMPT INPUT                          -->
-<!-- Replace this block with your screenshot: ![Hero Preview](path/to/img) -->
-```text
-+-------------------------------------------------------------------------+
-|  [Logo] Verdict                     [Roast Mode: OFF]    [User Profile] |
-|                                                                         |
-|                Stop Building Ideas Nobody Wants.                        |
-|        Get brutally honest, investor-grade feedback in seconds.         |
-|                                                                         |
-|   +-----------------------------------------------------------------+   |
-|   | Enter your startup idea in plain English...                     |   |
-|   | "Uber for dog walkers with autonomous AI scheduling..."         |   |
-|   +-----------------------------------------------------------------+   |
-|                                                                         |
-|                     [  ⚡ Get My Verdict  ]                             |
-+-------------------------------------------------------------------------+
-```
-*(Insert your screenshot of the landing page hero and input box here)*
+<!-- Layout reference: Hero section with clear value proposition and startup idea textarea -->
+![Landing Page](./attached_assets/preview-hero.png)
 
 ---
 
 ### 2. Real-Time Gemini AI Verdict Analysis
-<!-- ================================================================= -->
-<!-- PREVIEW PLACEHOLDER: 5-PART VERDICT RESULT                        -->
-<!-- Replace this block with your screenshot: ![Verdict Preview](path) -->
-```text
-+-------------------------------------------------------------------------+
-|  Verdict Score:  4.2 / 10  [High Risk / Crowded Market]                 |
-|                                                                         |
-|  1. Score Reason        Detailed critique on retention & economics      |
-|  2. Target Customer     Hyper-specific ICP and willingness to pay      |
-|  3. Biggest Risk        Customer acquisition cost & churn dynamics     |
-|  4. Competitor Landscape Existing incumbents and indirect alternatives  |
-|  5. 10x Pivot Move      The non-obvious angle that could make it work   |
-+-------------------------------------------------------------------------+
-```
-*(Insert your screenshot of the comprehensive 5-section verdict breakdown here)*
+<!-- Layout reference: Comprehensive 5-part structured breakdown with score gauge -->
+![Verdict Result](./attached_assets/preview-verdict.png)
 
 ---
 
 ### 3. Roast Mode Activated 🔥
-<!-- ================================================================= -->
-<!-- PREVIEW PLACEHOLDER: ROAST MODE COMPARISON                        -->
-<!-- Replace this block with your screenshot: ![Roast Preview](path)   -->
-```text
-+-------------------------------------------------------------------------+
-|  🔥 ROAST MODE ACTIVE                                                   |
-|  "Your biggest threat isn't the competition. It's that nobody actually  |
-|   wakes up in the morning wishing they had an AI-powered dog collar."   |
-+-------------------------------------------------------------------------+
-```
-*(Insert your screenshot showing Roast Mode toggle active with witty commentary)*
+<!-- Layout reference: Roast Mode toggle enabled with witty, unfiltered critique -->
+![Roast Mode](./attached_assets/preview-roast.png)
 
 ---
 
 ### 4. User Idea History (Per-User Isolation)
-<!-- ================================================================= -->
-<!-- PREVIEW PLACEHOLDER: HISTORY PAGE                                 -->
-<!-- Replace this block with your screenshot: ![History Preview](path) -->
-```text
-+-------------------------------------------------------------------------+
-|  Your Verdict History                                                   |
-|  ---------------------------------------------------------------------  |
-|  • "AI Newsletter Curator"          7.8/10   Yesterday, 4:12 PM  [View] |
-|  • "B2B SaaS for Construction"      8.5/10   3 days ago          [View] |
-|  • "Decentralized Pet Food"         2.1/10   Last week           [View] |
-+-------------------------------------------------------------------------+
-```
-*(Insert your screenshot of the authenticated idea history dashboard here)*
+<!-- Layout reference: Saved idea evaluations isolated strictly per Clerk user -->
+![Idea History](./attached_assets/preview-history.png)
 
 ---
 
 ### 5. Public Shareable Verdict Links
-<!-- ================================================================= -->
-<!-- PREVIEW PLACEHOLDER: PUBLIC SHARE LINK & MODAL                    -->
-<!-- Replace this block with your screenshot: ![Share Preview](path)   -->
-```text
-+-------------------------------------------------------------------------+
-|  Share this Verdict:  https://verdict.app/share/xK9zL2p                  |
-|  [ Copy Share Link ] - Anyone with this link can view this verdict      |
-|  without signing in. Powered by Neon PostgreSQL + Drizzle ORM.          |
-+-------------------------------------------------------------------------+
-```
-*(Insert your screenshot of the public share modal and public result view here)*
+<!-- Layout reference: Cross-device share modal with public permanent URL -->
+![Shareable Verdict](./attached_assets/preview-share.png)
+
+---
+
+## 🤔 Why Not Just Use ChatGPT?
+
+Fair question — anyone *can* open ChatGPT and write a custom prompt asking it to critically evaluate a startup idea. But in practice, almost nobody does it well or consistently:
+
+- **No one writes the same prompt twice.** Ask ChatGPT "is this a good idea?" and you get a vague, agreeable answer. Getting a genuinely critical, structured response requires prompt engineering most people won't bother with.
+- **Consistency matters.** Verdict runs every idea through the *same* fixed framework — Score, Target Customer, Biggest Risk, Competitor Landscape, and a 10x Pivot Move — every single time. That means results are comparable across ideas, not just a one-off chat response.
+- **Zero setup, zero prompt engineering.** Paste your idea, get a verdict. No system prompts to write, no follow-up questions to ask ChatGPT to get it to actually be critical instead of encouraging.
+- **Built for repeat use, not a single chat.** Every verdict is saved to your history, comparable over time, and shareable via a public link — none of which a raw ChatGPT conversation gives you.
 
 ---
 
@@ -110,9 +64,9 @@
 
 - **🤖 Google Gemini AI Engine**: Powered by Google's latest Gemini models via `@google/genai`, utilizing structured JSON schemas for rock-solid parsing and consistent analysis.
 - **🔥 Roast Mode Toggle**: Switch between an analytical, professional critique and a direct, witty, no-BS reality check that roasts the *idea*, not the founder.
-- **🔐 Frictionless Clerk Authentication**: Explore and draft ideas freely as a guest. Authenticate seamlessly with Clerk when generating verdicts and preserving personal history.
-- **📜 Scoped User History**: Verdict evaluations are automatically cached in browser storage isolated strictly per Clerk user ID.
-- **🔗 Cross-Device Public Sharing**: Publish any verdict into a permanent, read-only public URL (`/share/:shareId`) stored in Neon PostgreSQL and queryable without authentication.
+- **🔐 Frictionless Clerk Authentication**: Explore and draft ideas freely as a guest. Authenticate seamlessly with Clerk when generating verdicts and saving personal history.
+- **📜 Scoped User History**: Verdict evaluations are automatically cached in browser storage isolated strictly per Clerk user ID (`verdict-history-{userId}`).
+- **🔗 Cross-Device Public Sharing**: Publish any verdict into a permanent, read-only public URL (`/share/:shareId`) stored in Neon PostgreSQL and queryable without signing in.
 - **🎨 Premium UI & Motion**: Built with React 19, Tailwind CSS, Lucide icons, and Framer Motion for smooth state transitions, responsive cards, and clean typography.
 - **🚀 Dual Deployment Ready**: Single-command production build ready for both **Vercel** (Serverless functions) and **Render** (Node.js Web Service).
 
@@ -120,33 +74,26 @@
 
 ## 🛠️ Architecture & Monorepo Structure
 
-Verdict is organized as a high-performance **pnpm monorepo**:
-
 ```
 Verdict/
 ├── api/                           # Vercel Serverless Function entry point
 │   ├── index.ts                   # Lambda handler exporting Express app
-│   └── tsconfig.json              # Vercel TypeScript compiler config
+│   └── tsconfig.json              # Vercel TypeScript configuration
 ├── artifacts/
-│   ├── api-server/                # Express 5 backend service
-│   │   ├── src/
-│   │   │   ├── routes/            # /health, /api/verdict endpoints
-│   │   │   ├── lib/               # Logger (pino), utilities
-│   │   │   ├── app.ts             # Express app setup & SPA fallback
-│   │   │   └── index.ts           # Server bootstrap & port listener
+│   ├── api-server/                # Express 5 backend API
+│   │   ├── src/routes/            # /health, /api/verdict endpoints
+│   │   ├── src/app.ts             # Express app setup & SPA fallback
 │   │   └── build.mjs              # esbuild production bundler
 │   └── verdict/                   # React 19 + Vite 7 frontend application
-│       ├── src/
-│       │   ├── pages/             # Landing, History, Share views
-│       │   ├── components/        # Verdict cards, modals, gauges
-│       │   └── hooks/             # Query & state hooks
-│       └── vite.config.ts         # Vite build & development proxy
+│       ├── src/pages/             # Landing, History, Share views
+│       └── vite.config.ts         # Vite build configuration & dev proxy
+├── attached_assets/               # Screenshots and asset directory
 ├── lib/
-│   ├── api-zod/                   # Shared Zod schemas & type contracts
-│   └── db/                        # Neon PostgreSQL connection & Drizzle ORM schema
-├── vercel.json                    # Single-project Vercel deployment rewrites
-├── pnpm-workspace.yaml            # Monorepo workspace declarations & catalog
-└── package.json                   # Root scripts (build, start, typecheck)
+│   ├── api-zod/                   # Shared Zod validation schemas
+│   └── db/                        # Neon PostgreSQL connection & Drizzle schema
+├── vercel.json                    # Vercel single-project routing & rewrites
+├── pnpm-workspace.yaml            # Monorepo workspace configuration
+└── package.json                   # Root build & start scripts
 ```
 
 ---
@@ -157,11 +104,10 @@ Verdict/
 |---|---|
 | **Frontend** | React 19, Vite 7, TypeScript, Tailwind CSS, Framer Motion, Wouter, Lucide Icons |
 | **Backend** | Express 5, Node.js (ESM), `@clerk/express`, `@google/genai`, Pino HTTP |
-| **Database** | Neon Serverless PostgreSQL, Drizzle ORM, Drizzle Kit |
+| **Database** | Neon Serverless PostgreSQL, Drizzle ORM |
 | **Authentication** | Clerk (`@clerk/clerk-react`, `@clerk/express`) |
 | **Validation** | Zod schemas shared across client and server |
-| **Monorepo** | pnpm workspaces |
-| **Deployment** | Vercel (Frontend CDN + Serverless Functions) / Render (Docker/Node) |
+| **Deployment** | Vercel (Frontend CDN + Serverless Functions) / Render (Web Service) |
 
 ---
 
@@ -186,21 +132,19 @@ Create local `.env` files for both frontend and backend:
 
 #### Frontend (`artifacts/verdict/.env`):
 ```ini
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_key
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key
 ```
 
 #### Backend (`artifacts/api-server/.env`):
 ```ini
 PORT=5000
-CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_key
-CLERK_SECRET_KEY=sk_test_your_clerk_secret
-GEMINI_API_KEY=your_gemini_api_key
+CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key
+CLERK_SECRET_KEY=sk_test_your_clerk_secret_key
+GEMINI_API_KEY=your_gemini_api_key_here
 DATABASE_URL=postgresql://user:password@ep-xyz.neon.tech/neondb?sslmode=require
 ```
 
 ### 3. Run Development Servers
-
-Run the backend and frontend development servers:
 
 **Terminal 1 — Backend API:**
 ```bash
@@ -220,8 +164,6 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ## 🧪 Testing & Production Build
 
-Verify all packages and TypeScript compilation:
-
 ```bash
 # Typecheck all packages
 pnpm run typecheck
@@ -235,13 +177,11 @@ pnpm run start
 
 ---
 
-## 🌐 Deployment
-
-### Deploy to Vercel (Single Project)
+## 🌐 Deployment to Vercel
 
 1. Import the repository at **[vercel.com/new](https://vercel.com/new)**.
-2. Select branch `buildathon`.
-3. Framework Preset: `Other`.
+2. Select your production branch (e.g. `main` or `buildathon`).
+3. Framework Preset: `Other` (detected from `vercel.json`).
 4. Build command: `pnpm run build`
 5. Output directory: `artifacts/verdict/dist/public`
 6. Add the 5 Environment Variables:
