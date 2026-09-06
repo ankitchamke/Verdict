@@ -2,16 +2,16 @@
 
 > Get instant, structured, investor-grade feedback on your startup idea — with an optional brutal-honesty mode.
 
+[![Clerk Buildathon](https://img.shields.io/badge/Built%20for-Clerk%20Buildathon-6C47FF?style=flat&logo=clerk)](https://clerk.com)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://vercel.com)
 [![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite)](https://vitejs.dev)
 [![Express](https://img.shields.io/badge/Express-5-000000?logo=express)](https://expressjs.com)
 [![Gemini](https://img.shields.io/badge/Google-Gemini%202.5-8E75B2?logo=google)](https://deepmind.google/technologies/gemini/)
-[![Clerk](https://img.shields.io/badge/Auth-Clerk-6C47FF?logo=clerk)](https://clerk.com)
 [![PostgreSQL](https://img.shields.io/badge/Database-Neon%20Postgres-00E599?logo=postgresql)](https://neon.tech)
 [![Drizzle](https://img.shields.io/badge/ORM-Drizzle-C5F74F?logo=drizzle)](https://orm.drizzle.team)
 
-🔗 **[Live Demo](https://your-deployed-url-here.vercel.app)** *(Update with your production Vercel URL)*
+<!-- 🔗 **[Live Demo](https://your-deployed-url-here.vercel.app)** *(Update with your production Vercel URL)* -->
 
 ---
 
@@ -26,7 +26,7 @@
 ---
 
 ### 2. Real-Time Gemini AI Verdict Analysis
-<!-- Layout reference: Comprehensive 5-part structured breakdown with score gauge -->
+<!-- Layout reference: Comprehensive 5-part structured breakdown with dynamic score gauge -->
 ![Verdict Result](./attached_assets/preview-verdict.png)
 
 ---
@@ -37,15 +37,35 @@
 
 ---
 
-### 4. User Idea History (Per-User Isolation)
-<!-- Layout reference: Saved idea evaluations isolated strictly per Clerk user -->
+### 4. Seamless Clerk Authentication & User Profile 🔐
+<!-- Layout reference: Clerk sign-in modal, session management, and custom styled UserButton -->
+![Clerk Authentication](./attached_assets/preview-auth.png)
+
+---
+
+### 5. User Idea History (Scoped per Clerk User)
+<!-- Layout reference: Saved idea evaluations isolated strictly per authenticated Clerk user -->
 ![Idea History](./attached_assets/preview-history.png)
 
 ---
 
-### 5. Public Shareable Verdict Links
-<!-- Layout reference: Cross-device share modal with public permanent URL -->
+### 6. Public Shareable Verdict Links
+<!-- Layout reference: Cross-device share modal with public permanent URL via Neon PostgreSQL -->
 ![Shareable Verdict](./attached_assets/preview-share.png)
+
+---
+
+## 🔐 How Clerk Powers Verdict
+
+Built specifically for the **Clerk Buildathon**, Verdict demonstrates how **Clerk** enables frictionless onboarding while maintaining enterprise-grade full-stack security:
+
+- **Progressive Disclosure & Zero-Friction Browsing**: Visitors can explore the landing page, view sample analyses, and draft startup ideas freely without an immediate login wall.
+- **Just-in-Time Authentication**: When a user clicks **"Get my verdict"** or accesses **"History"**, Clerk’s modal sign-in (`<SignInButton mode="modal">`) triggers smoothly without losing their drafted idea.
+- **Full-Stack Authentication Architecture**:
+  - **Frontend (`@clerk/clerk-react`)**: Seamlessly manages user identity, session state, and UI gating using `<SignedIn>`, `<SignedOut>`, `useAuth()`, and `<UserButton />`.
+  - **Backend (`@clerk/express`)**: The Express 5 backend validates session tokens via `clerkMiddleware()` and extracts authenticated credentials with `getAuth(req)` to protect the verdict generation endpoint (`/api/verdict/analyze`).
+- **Per-User Multi-Tenant History Isolation**: Past evaluations and scores are strictly scoped to the authenticated user ID (`verdict-history-{userId}`), ensuring complete data privacy and cross-session persistence across devices.
+- **Embedded Account Management**: Founders can view and manage their account details, security settings, and active sessions directly from the custom-styled `<UserButton />` in the navbar.
 
 ---
 
@@ -64,7 +84,7 @@ Fair question — anyone *can* open ChatGPT and write a custom prompt asking it 
 
 - **🤖 Google Gemini AI Engine**: Powered by Google's latest Gemini models via `@google/genai`, utilizing structured JSON schemas for rock-solid parsing and consistent analysis.
 - **🔥 Roast Mode Toggle**: Switch between an analytical, professional critique and a direct, witty, no-BS reality check that roasts the *idea*, not the founder.
-- **🔐 Frictionless Clerk Authentication**: Explore and draft ideas freely as a guest. Authenticate seamlessly with Clerk when generating verdicts and saving personal history.
+- **🔐 Clerk Authentication Suite**: Complete identity stack with modal sign-in, token verification, and session lifecycle management.
 - **📜 Scoped User History**: Verdict evaluations are automatically cached in browser storage isolated strictly per Clerk user ID (`verdict-history-{userId}`).
 - **🔗 Cross-Device Public Sharing**: Publish any verdict into a permanent, read-only public URL (`/share/:shareId`) stored in Neon PostgreSQL and queryable without signing in.
 - **🎨 Premium UI & Motion**: Built with React 19, Tailwind CSS, Lucide icons, and Framer Motion for smooth state transitions, responsive cards, and clean typography.
@@ -82,10 +102,11 @@ Verdict/
 ├── artifacts/
 │   ├── api-server/                # Express 5 backend API
 │   │   ├── src/routes/            # /health, /api/verdict endpoints
-│   │   ├── src/app.ts             # Express app setup & SPA fallback
+│   │   ├── src/app.ts             # Express app setup, Clerk middleware & SPA fallback
 │   │   └── build.mjs              # esbuild production bundler
 │   └── verdict/                   # React 19 + Vite 7 frontend application
 │       ├── src/pages/             # Landing, History, Share views
+│       ├── src/components/        # Verdict cards, ScoreRing, modals, Clerk UI
 │       └── vite.config.ts         # Vite build configuration & dev proxy
 ├── attached_assets/               # Screenshots and asset directory
 ├── lib/
@@ -102,10 +123,10 @@ Verdict/
 
 | Layer | Technology |
 |---|---|
+| **Authentication** | **Clerk** (`@clerk/clerk-react`, `@clerk/express`) |
 | **Frontend** | React 19, Vite 7, TypeScript, Tailwind CSS, Framer Motion, Wouter, Lucide Icons |
-| **Backend** | Express 5, Node.js (ESM), `@clerk/express`, `@google/genai`, Pino HTTP |
+| **Backend** | Express 5, Node.js (ESM), `@google/genai`, Pino HTTP |
 | **Database** | Neon Serverless PostgreSQL, Drizzle ORM |
-| **Authentication** | Clerk (`@clerk/clerk-react`, `@clerk/express`) |
 | **Validation** | Zod schemas shared across client and server |
 | **Deployment** | Vercel (Frontend CDN + Serverless Functions) / Render (Web Service) |
 
