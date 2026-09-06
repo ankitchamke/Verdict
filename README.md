@@ -1,4 +1,4 @@
-﻿# Verdict ⚖️ — AI Startup Idea Validator
+# Verdict ⚖️ — AI Startup Idea Validator
 
 > Get instant, structured, investor-grade feedback on your startup idea — with an optional brutal-honesty mode.
 
@@ -11,9 +11,9 @@
 [![PostgreSQL](https://img.shields.io/badge/Database-Neon%20Postgres-00E599?logo=postgresql)](https://neon.tech)
 [![Drizzle](https://img.shields.io/badge/ORM-Drizzle-C5F74F?logo=drizzle)](https://orm.drizzle.team)
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Verdict-D4FC34?style=for-the-badge&logo=vercel&logoColor=black&labelColor=161B26)](https://verdict-cxbummw01-ankitchamke.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Verdict-D4FC34?style=for-the-badge&logo=vercel&logoColor=black&labelColor=161B26)](https://verdict-api-server-lyart.vercel.app)
 
-🌐 **Live Application:** [https://verdict-cxbummw01-ankitchamke.vercel.app](https://verdict-cxbummw01-ankitchamke.vercel.app)
+🌐 **Live Application:** [https://verdict-api-server-lyart.vercel.app](https://verdict-api-server-lyart.vercel.app)
 
 ---
 
