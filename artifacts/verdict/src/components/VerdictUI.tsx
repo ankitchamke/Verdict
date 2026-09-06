@@ -1,6 +1,37 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { Github, Linkedin, type LucideIcon } from 'lucide-react';
 
+export function VerdictLogo({ className = 'h-7 w-7' }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="logoLimeDot" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#D4FC34" />
+          <stop offset="100%" stopColor="#B1E600" />
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="7" fill="#161B26" />
+      <text
+        x="6"
+        y="23"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="20"
+        fontWeight="800"
+        fill="#FFFFFF"
+      >
+        v
+      </text>
+      <circle cx="22" cy="21" r="2.5" fill="url(#logoLimeDot)" />
+    </svg>
+  );
+}
+
 export function SiteFooter() {
   return (
     <footer className="border-t border-[hsl(var(--foreground)/0.14)] py-6 sm:py-7">

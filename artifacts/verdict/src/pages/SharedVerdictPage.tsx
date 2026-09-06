@@ -13,7 +13,7 @@ import {
   TriangleAlert,
   UsersRound,
 } from 'lucide-react';
-import { ScoreRing, VerdictCard, SiteFooter } from '@/components/VerdictUI';
+import { ScoreRing, VerdictCard, SiteFooter, VerdictLogo } from '@/components/VerdictUI';
 
 type SharedVerdictData = {
   id: string;
@@ -100,6 +100,7 @@ export default function SharedVerdictPage() {
             className="flex items-center gap-2.5 transition-opacity hover:opacity-85"
             data-testid="link-home-brand"
           >
+            <VerdictLogo className="h-6 w-6 shrink-0 rounded-[6px] sm:h-7 sm:w-7" />
             <span className="font-serif text-2xl font-bold tracking-tight text-[hsl(var(--foreground))]">
               Verdict<span className="text-[hsl(var(--accent-foreground))]">.</span>
             </span>

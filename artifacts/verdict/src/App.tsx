@@ -39,7 +39,7 @@ import {
 } from '@/lib/history';
 import NotFound from '@/pages/not-found';
 import SharedVerdictPage from '@/pages/SharedVerdictPage';
-import { ScoreRing, VerdictCard, SiteFooter } from '@/components/VerdictUI';
+import { ScoreRing, VerdictCard, SiteFooter, VerdictLogo } from '@/components/VerdictUI';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
   SignedIn,
@@ -97,11 +97,12 @@ function SiteNav({
       aria-label="Main navigation"
     >
       <a
-        className="verdict-wordmark text-[1.55rem] font-bold leading-none text-[hsl(var(--foreground))] sm:text-[1.7rem]"
+        className="verdict-wordmark flex items-center gap-2.5 text-[1.55rem] font-bold leading-none text-[hsl(var(--foreground))] sm:text-[1.7rem]"
         href="/"
         data-testid="link-home"
       >
-        verdict<span className="text-[hsl(var(--accent))]">.</span>
+        <VerdictLogo className="h-6 w-6 shrink-0 rounded-[6px] sm:h-7 sm:w-7" />
+        <span>verdict<span className="text-[hsl(var(--accent))]">.</span></span>
       </a>
 
       <div className="flex items-center gap-4 sm:gap-8">
