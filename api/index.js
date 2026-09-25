@@ -110114,60 +110114,84 @@ router2.post("/analyze", async (req, res) => {
 "${idea}"` : `Interrogate this startup idea and generate your brutal verdict:
 
 "${idea}"`;
-    const response = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: userPrompt,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            score: {
-              type: Type.NUMBER,
-              description: "Build-worthiness score from 0.0 to 10.0"
-            },
-            scoreReason: {
-              type: Type.STRING,
-              description: "One-line honest reasoning for the score"
-            },
-            targetUser: {
-              type: Type.STRING,
-              description: "Specific target customer persona (never 'everyone')"
-            },
-            biggestRisk: {
-              type: Type.STRING,
-              description: "The single biggest failure point or market risk"
-            },
-            competitors: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "Array of 2 to 3 real-world competitors or existing alternatives"
-            },
-            tenXSuggestion: {
-              type: Type.STRING,
-              description: "One sharp, actionable improvement to make it 10x better"
+    const candidateModels = [
+      process.env.GEMINI_MODEL,
+      "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-2.0-flash",
+      "gemini-3.6-flash"
+    ].filter(Boolean);
+    const modelsToTry = [...new Set(candidateModels)];
+    let response = null;
+    let lastError = null;
+    for (const model of modelsToTry) {
+      try {
+        response = await ai.models.generateContent({
+          model,
+          contents: userPrompt,
+          config: {
+            systemInstruction,
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                score: {
+                  type: Type.NUMBER,
+                  description: "Build-worthiness score from 0.0 to 10.0"
+                },
+                scoreReason: {
+                  type: Type.STRING,
+                  description: "One-line honest reasoning for the score"
+                },
+                targetUser: {
+                  type: Type.STRING,
+                  description: "Specific target customer persona (never 'everyone')"
+                },
+                biggestRisk: {
+                  type: Type.STRING,
+                  description: "The single biggest failure point or market risk"
+                },
+                competitors: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING },
+                  description: "Array of 2 to 3 real-world competitors or existing alternatives"
+                },
+                tenXSuggestion: {
+                  type: Type.STRING,
+                  description: "One sharp, actionable improvement to make it 10x better"
+                }
+              },
+              required: [
+                "score",
+                "scoreReason",
+                "targetUser",
+                "biggestRisk",
+                "competitors",
+                "tenXSuggestion"
+              ]
             }
-          },
-          required: [
-            "score",
-            "scoreReason",
-            "targetUser",
-            "biggestRisk",
-            "competitors",
-            "tenXSuggestion"
-          ]
+          }
+        });
+        if (response && response.text) {
+          break;
         }
+      } catch (callErr) {
+        lastError = callErr;
+        const status = callErr?.status ?? callErr?.statusCode ?? callErr?.response?.status;
+        console.warn(`[POST /api/verdict/analyze] Model '${model}' failed with status ${status || "unknown"}. Trying fallback model...`);
       }
-    });
-    const rawText = response.text;
-    if (!rawText) {
-      console.error("[POST /api/verdict/analyze] Upstream Error: Gemini returned empty response text.");
+    }
+    if (!response || !response.text) {
+      if (lastError) {
+        throw lastError;
+      }
+      console.error("[POST /api/verdict/analyze] Upstream Error: Gemini returned empty response text across all models.");
       logger2.error("Gemini returned empty response text.");
       return res.status(502).json({
         error: "Received an empty analysis from the AI service. Please try again."
       });
     }
+    const rawText = response.text;
     let parsedJson;
     try {
       parsedJson = JSON.parse(rawText);
