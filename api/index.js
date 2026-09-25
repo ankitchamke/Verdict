@@ -110084,6 +110084,42 @@ function sanitizeText(input) {
   }
   return text2.replace(/([?&]key=)[^&\s"']+/gi, "$1[REDACTED]").replace(/AIza[0-9A-Za-z\-_]{35}/g, "[REDACTED_API_KEY]").replace(/sk_(test|live)_[0-9A-Za-z]+/g, "[REDACTED_CLERK_KEY]").replace(/Bearer\s+[A-Za-z0-9._\-]+/gi, "Bearer [REDACTED]").replace(/ey[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+/g, "[REDACTED_TOKEN]");
 }
+var cachedDiscoveredModels = null;
+async function getAvailableModels(ai) {
+  const preferred = [
+    process.env.GEMINI_MODEL,
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-3.7-flash",
+    "gemini-3.8-flash",
+    "gemini-3.1-pro-preview",
+    "gemini-3-flash-preview",
+    "gemini-3.6-flash"
+  ].filter(Boolean);
+  if (cachedDiscoveredModels && cachedDiscoveredModels.length > 0) {
+    return [.../* @__PURE__ */ new Set([...preferred, ...cachedDiscoveredModels])];
+  }
+  try {
+    const pager = await ai.models.list();
+    const discovered = [];
+    if (pager && Array.isArray(pager.page)) {
+      for (const m2 of pager.page) {
+        const id = m2?.name?.replace(/^models\//, "");
+        if (id && id.includes("gemini")) {
+          discovered.push(id);
+        }
+      }
+    }
+    if (discovered.length > 0) {
+      console.log(`[getAvailableModels] Discovered models from Gemini API: ${discovered.join(", ")}`);
+      cachedDiscoveredModels = discovered;
+      return [.../* @__PURE__ */ new Set([...preferred, ...discovered])];
+    }
+  } catch (err) {
+    console.warn(`[getAvailableModels] Could not query models list: ${err?.message || err}`);
+  }
+  return [...new Set(preferred)];
+}
 router2.post("/analyze", async (req, res) => {
   try {
     const auth = getAuth(req);
@@ -110114,14 +110150,7 @@ router2.post("/analyze", async (req, res) => {
 "${idea}"` : `Interrogate this startup idea and generate your brutal verdict:
 
 "${idea}"`;
-    const candidateModels = [
-      process.env.GEMINI_MODEL,
-      "gemini-1.5-flash",
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-3.6-flash"
-    ].filter(Boolean);
-    const modelsToTry = [...new Set(candidateModels)];
+    const modelsToTry = await getAvailableModels(ai);
     let response = null;
     let lastError = null;
     for (const model of modelsToTry) {

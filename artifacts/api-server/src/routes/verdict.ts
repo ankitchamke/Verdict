@@ -97,6 +97,47 @@ function sanitizeText(input: unknown): string {
     .replace(/ey[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+/g, "[REDACTED_TOKEN]");
 }
 
+let cachedDiscoveredModels: string[] | null = null;
+
+async function getAvailableModels(ai: GoogleGenAI): Promise<string[]> {
+  const preferred = [
+    process.env.GEMINI_MODEL,
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-3.7-flash",
+    "gemini-3.8-flash",
+    "gemini-3.1-pro-preview",
+    "gemini-3-flash-preview",
+    "gemini-3.6-flash",
+  ].filter(Boolean) as string[];
+
+  if (cachedDiscoveredModels && cachedDiscoveredModels.length > 0) {
+    return [...new Set([...preferred, ...cachedDiscoveredModels])];
+  }
+
+  try {
+    const pager = await ai.models.list();
+    const discovered: string[] = [];
+    if (pager && Array.isArray((pager as any).page)) {
+      for (const m of (pager as any).page) {
+        const id = m?.name?.replace(/^models\//, "");
+        if (id && id.includes("gemini")) {
+          discovered.push(id);
+        }
+      }
+    }
+    if (discovered.length > 0) {
+      console.log(`[getAvailableModels] Discovered models from Gemini API: ${discovered.join(", ")}`);
+      cachedDiscoveredModels = discovered;
+      return [...new Set([...preferred, ...discovered])];
+    }
+  } catch (err: any) {
+    console.warn(`[getAvailableModels] Could not query models list: ${err?.message || err}`);
+  }
+
+  return [...new Set(preferred)];
+}
+
 router.post("/analyze", async (req, res) => {
   try {
     // 1. Verify Clerk authentication
@@ -135,15 +176,8 @@ router.post("/analyze", async (req, res) => {
       ? `Brutally roast this startup idea with surgical wit and give your verdict:\n\n"${idea}"`
       : `Interrogate this startup idea and generate your brutal verdict:\n\n"${idea}"`;
 
-    // 5. Call Gemini with structured schema (gemini-1.5-flash primary, with fallbacks)
-    const candidateModels = [
-      process.env.GEMINI_MODEL,
-      "gemini-1.5-flash",
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-3.6-flash",
-    ].filter(Boolean) as string[];
-    const modelsToTry = [...new Set(candidateModels)];
+    // 5. Call Gemini with structured schema (auto-fallback across available Gemini models)
+    const modelsToTry = await getAvailableModels(ai);
 
     let response: any = null;
     let lastError: any = null;
