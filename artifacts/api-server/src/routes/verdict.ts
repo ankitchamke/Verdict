@@ -66,6 +66,37 @@ Output Rules:
 - Return strictly valid JSON adhering to the provided schema.
 - No markdown wrappers, no formatting outside the JSON object.`;
 
+function safeStringify(val: unknown): string {
+  if (typeof val === "string") return val;
+  try {
+    return JSON.stringify(val);
+  } catch {
+    return String(val);
+  }
+}
+
+function sanitizeText(input: unknown): string {
+  if (input === null || input === undefined) return "";
+  let text = safeStringify(input);
+
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey && geminiKey.trim()) {
+    text = text.split(geminiKey).join("[REDACTED_API_KEY]");
+  }
+
+  const clerkSecret = process.env.CLERK_SECRET_KEY;
+  if (clerkSecret && clerkSecret.trim()) {
+    text = text.split(clerkSecret).join("[REDACTED_CLERK_SECRET]");
+  }
+
+  return text
+    .replace(/([?&]key=)[^&\s"']+/gi, "$1[REDACTED]")
+    .replace(/AIza[0-9A-Za-z\-_]{35}/g, "[REDACTED_API_KEY]")
+    .replace(/sk_(test|live)_[0-9A-Za-z]+/g, "[REDACTED_CLERK_KEY]")
+    .replace(/Bearer\s+[A-Za-z0-9._\-]+/gi, "Bearer [REDACTED]")
+    .replace(/ey[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+/g, "[REDACTED_TOKEN]");
+}
+
 router.post("/analyze", async (req, res) => {
   try {
     // 1. Verify Clerk authentication
@@ -88,7 +119,9 @@ router.post("/analyze", async (req, res) => {
     // 3. Initialize Gemini
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      logger.error("GEMINI_API_KEY is not configured in backend environment.");
+      const configMsg = "GEMINI_API_KEY is not configured in backend environment.";
+      console.error(`[POST /api/verdict/analyze] Configuration Error: ${configMsg}`);
+      logger.error(configMsg);
       return res.status(500).json({
         error: "AI service configuration error. Please contact support.",
       });
@@ -152,6 +185,7 @@ router.post("/analyze", async (req, res) => {
 
     const rawText = response.text;
     if (!rawText) {
+      console.error("[POST /api/verdict/analyze] Upstream Error: Gemini returned empty response text.");
       logger.error("Gemini returned empty response text.");
       return res.status(502).json({
         error: "Received an empty analysis from the AI service. Please try again.",
@@ -161,7 +195,8 @@ router.post("/analyze", async (req, res) => {
     let parsedJson: unknown;
     try {
       parsedJson = JSON.parse(rawText);
-    } catch (parseErr) {
+    } catch (parseErr: any) {
+      console.error(`[POST /api/verdict/analyze] Parse Error: Failed to parse Gemini JSON output: ${parseErr?.message || parseErr}`);
       logger.error({ rawText, parseErr }, "Failed to parse Gemini JSON output.");
       return res.status(502).json({
         error: "Invalid response format received from AI model. Please retry.",
@@ -193,7 +228,47 @@ router.post("/analyze", async (req, res) => {
 
     return res.json({ ...validatedVerdict.data, roastMode });
   } catch (err: any) {
-    logger.error({ err: err?.message || err }, "Error in /api/verdict/analyze");
+    const status =
+      err?.status ??
+      err?.statusCode ??
+      err?.response?.status ??
+      err?.cause?.status ??
+      (typeof err?.error?.code === "number" ? err.error.code : undefined);
+
+    const code =
+      err?.code ??
+      err?.error?.status ??
+      err?.error?.code ??
+      (Array.isArray(err?.errors) && err.errors[0]?.code ? err.errors[0].code : undefined);
+
+    const errorName =
+      err?.name ||
+      (err?.constructor?.name && err?.constructor?.name !== "Object" ? err.constructor.name : undefined) ||
+      "Error";
+
+    const rawMessage = err?.error?.message || err?.message || String(err);
+    const safeMessage = sanitizeText(rawMessage);
+    const safeStack = err?.stack ? sanitizeText(err.stack) : undefined;
+    const details = err?.errorDetails ? sanitizeText(err.errorDetails) : undefined;
+
+    console.error(
+      `[POST /api/verdict/analyze] Upstream Error:${status ? ` [Status: ${status}]` : ""}${code ? ` [Code: ${code}]` : ""} ${errorName}: ${safeMessage}${details ? ` | Details: ${details}` : ""}${safeStack ? `\nStack: ${safeStack}` : ""}`
+    );
+
+    logger.error(
+      {
+        err: {
+          name: errorName,
+          status,
+          code,
+          message: safeMessage,
+          details,
+          stack: safeStack,
+        },
+      },
+      `Error in /api/verdict/analyze${status ? ` (upstream status ${status})` : ""}`
+    );
+
     return res.status(500).json({
       error: "An unexpected error occurred while analyzing your idea. Please try again.",
     });
