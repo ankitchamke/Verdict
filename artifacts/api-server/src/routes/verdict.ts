@@ -135,11 +135,11 @@ router.post("/analyze", async (req, res) => {
       ? `Brutally roast this startup idea with surgical wit and give your verdict:\n\n"${idea}"`
       : `Interrogate this startup idea and generate your brutal verdict:\n\n"${idea}"`;
 
-    // 5. Call Gemini with structured schema (with resilient model fallback)
+    // 5. Call Gemini with structured schema (gemini-1.5-flash primary, with fallbacks)
     const candidateModels = [
       process.env.GEMINI_MODEL,
-      "gemini-2.5-flash",
       "gemini-1.5-flash",
+      "gemini-2.5-flash",
       "gemini-2.0-flash",
       "gemini-3.6-flash",
     ].filter(Boolean) as string[];
